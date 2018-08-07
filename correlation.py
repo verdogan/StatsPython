@@ -13,12 +13,6 @@ def twocorr(x, y):
     return corr, p
 
 
-def multicorr(arrs):
-    for arr1 in arrs:
-        for arr2 in arrs:
-            print(twocorr(arr1, arr2))
-
-
 analysis_id = 1
 
 cnx = connect()
