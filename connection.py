@@ -14,7 +14,7 @@ def connect():
     try:
         cnx = mysql.connector.connect(**config)
     except mysql.connector.Error as err:
-        print("Connection error")
+        print(err)
         exit(1)
 
     return cnx
