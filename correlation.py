@@ -1,12 +1,12 @@
-from scipy.stats.stats import pearsonr
+from scipy.stats import pearsonr
 from connection import connect, currtime
 from sperror import sperror
 import sys
 
 cnx = connect()
 
-analysis_id = 1
-# analysis_id = sys.argv[0]
+# analysis_id = 1
+analysis_id = sys.argv[0]
 
 
 def twocorr(x, y):
@@ -135,23 +135,34 @@ for variable in data_raw:
 
 data = data_with_nones
 for i in range(0, len(variables)):
-    for j in range(0, len(variables)):
-        cursor9 = cnx.cursor()
-        tempvar1 = []
-        tempvar2 = []
-        for k in range(0, len(data[i])):
-            if data[i][k] != None and data[j][k] != None:
-                tempvar1.append(data[i][k])
-                tempvar2.append(data[j][k])
-        corr, p = twocorr(tempvar1, tempvar2)
-        corr = round(corr, 2)
-        p = round(p, 2)
+    for j in range(i, len(variables)):
+        cursor91 = cnx.cursor()
+        cursor92 = cnx.cursor()
+        if i == j:
+            corr = 1.00
+            p = 0.00
+        else:
+            tempvar1 = []
+            tempvar2 = []
+            for k in range(0, len(data[i])):
+                if data[i][k] != None and data[j][k] != None:
+                    tempvar1.append(data[i][k])
+                    tempvar2.append(data[j][k])
+            corr, p = twocorr(tempvar1, tempvar2)
+            corr = round(corr, 2)
+            p = round(p, 2)
         try:
-            cursor9.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
+            cursor91.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
                                 var1 = {var1}, var2 = {var2}, corr_value = {corr_value}, 
                                 p_value = {p_value}""".format(current_id=analysis_id,
                                 var1=variables[i]["variable_id"], var2=variables[j]["variable_id"],
                                 corr_value=corr, p_value=p))
+            if True is False:
+                cursor92.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
+                                    var1 = {var1}, var2 = {var2}, corr_value = {corr_value}, 
+                                    p_value = {p_value}""".format(current_id=analysis_id,
+                                    var1=variables[j]["variable_id"], var2=variables[i]["variable_id"],
+                                    corr_value=corr, p_value=p))
         except:
             cursor_err = cnx.cursor()
             cursor_err.execute(sperror("Correlation results can't be written to database", analysis_id))
@@ -160,7 +171,8 @@ for i in range(0, len(variables)):
             cnx.close()
             exit(1)
         cnx.commit()
-        cursor9.close()
+        cursor91.close()
+        cursor92.close()
 
 cursor10 = cnx.cursor(dictionary=True)
 try:
