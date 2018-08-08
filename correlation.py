@@ -3,6 +3,7 @@ from connection import connect
 import time
 from datetime import datetime
 from pytz import timezone
+import sys
 
 
 def twocorr(x, y):
@@ -18,7 +19,8 @@ tz = timezone('EST')
 now_est = datetime.now(tz)
 now = now_est.strftime("%Y-%m-%d %H:%M:%S")
 
-analysis_id = 1
+# analysis_id = 1
+analysis_id = sys.argv[0]
 
 cnx = connect()
 
