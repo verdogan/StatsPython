@@ -1,7 +1,8 @@
 from scipy.stats.stats import pearsonr
 from connection import connect
 import time
-from datetime import timezone
+from datetime import datetime
+from pytz import timezone
 
 
 def twocorr(x, y):
@@ -13,6 +14,10 @@ def twocorr(x, y):
     return corr, p
 
 
+tz = timezone('EST')
+now_est = datetime.now(tz)
+now = now_est.strftime("%Y-%m-%d %H:%M:%S")
+
 analysis_id = 1
 
 cnx = connect()
@@ -21,10 +26,6 @@ cursor1 = cnx.cursor(dictionary=True)
 cursor1.execute("SELECT * FROM analysis WHERE id = {current_id}".format(current_id = analysis_id))
 result = cursor1.fetchall()
 cursor1.close()
-
-print(result[0])
-
-now = time.strftime("%Y-%m-%d %H:%M:%S")
 
 if result[0]["analysis_type"] != "CORRELATION":
     cursor2 = cnx.cursor()
@@ -55,7 +56,6 @@ cursor5 = cnx.cursor(dictionary=True, buffered=True)
 ro_id = result[0]["ro_id"]
 cursor5.execute("SELECT variable_id FROM ro_vars WHERE ro_id = {current_ro_id}".format(current_ro_id=ro_id))
 variables = cursor5.fetchall()
-print(variables)
 cursor5.close()
 
 # TODO implement workbook (level 1) filters
@@ -64,7 +64,7 @@ cursor5.close()
 # 'filter_condition': 'isgreaterthan', 'value1': '1000', 'value2': None,
 # 'created': datetime.datetime(2018, 8, 7, 15, 1, 37), 'modified': None}]
 # This result means that _values that are > 1000 should be ***removed/excluded*** from the values of variable
-# whose id is 156_ .
+# whose id is 156
 cursor7 = cnx.cursor(dictionary=True, buffered=True)
 cursor7.execute("SELECT * FROM ro_filter WHERE ro_id = {current_ro_id}".format(current_ro_id=ro_id))
 filters2 = cursor7.fetchall()
@@ -89,23 +89,25 @@ for variable in data_raw:
         if value[0] is not None:
             row.append(int(value[0]))
         else:
-            row.append(0) #temp
+            row.append(None)
     data_with_nones.append(row)
-data = []
-for i in range(0, len(data_with_nones)):
-    data.append([])
-for i in range(0, len(data_with_nones[0])+1):
-    x=1
 
-data = data_with_nones #temp
+
+data = data_with_nones
 for i in range(0, len(variables)):
     for j in range(0, len(variables)):
         cursor9 = cnx.cursor()
-        corr, p = twocorr(data_with_nones[i], data_with_nones[j])
+        tempvar1 = []
+        tempvar2 = []
+        for k in range(0, len(data[i])):
+            if data[i][k] != None and data[j][k] != None:
+                tempvar1.append(data[i][k])
+                tempvar2.append(data[j][k])
+        corr, p = twocorr(tempvar1, tempvar2)
         corr = round(corr, 2)
         p = round(p, 2)
         cursor9.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
-                            var1 = {var1}, var2 ={var2}, corr_value = {corr_value}, 
+                            var1 = {var1}, var2 = {var2}, corr_value = {corr_value}, 
                             p_value = {p_value}""".format(current_id=analysis_id,
                             var1=variables[i]["variable_id"], var2=variables[j]["variable_id"],
                             corr_value=corr, p_value=p))
