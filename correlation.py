@@ -2,12 +2,24 @@ from scipy.stats import pearsonr
 from connection import connect, currtime
 from sperror import sperror
 import sys
+import random
 
-cnx = connect()
+if len(sys.argv) == 1:
+    print("No id was passed.")
+    exit(1)
+# analysis_id = 2
 
-# analysis_id = sys.argv[1]
-analysis_id = 2
+analysis_id = sys.argv[1]
 
+try:
+    analysis_id = int(analysis_id)
+except:
+    print(("Invalid Analysis id ({this_id}) was passed").format(this_id=analysis_id))
+    exit(1)
+
+if analysis_id < 1:
+    print(("Invalid Analysis id ({this_id}) was passed").format(this_id=analysis_id))
+    exit(1)
 
 def twocorr(x, y):
     try:
@@ -22,7 +34,7 @@ def twocorr(x, y):
 
     return corr, p
 
-
+cnx = connect()
 now = currtime()
 
 cursor1 = cnx.cursor(dictionary=True)
@@ -146,8 +158,8 @@ for i in range(0, len(variables)):
             tempvar2 = []
             for k in range(0, len(data[i])):
                 if data[i][k] != None and data[j][k] != None:
-                    tempvar1.append(data[i][k] + 0.000001)
-                    tempvar2.append(data[j][k] + 0.000001)
+                    tempvar1.append(data[i][k] + random.uniform(-0.000001, 0.000001))
+                    tempvar2.append(data[j][k] + random.uniform(-0.000001, 0.000001))
             corr, p = twocorr(tempvar1, tempvar2)
             corr = round(corr, 2)
             p = round(p, 2)
