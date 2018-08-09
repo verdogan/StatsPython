@@ -5,8 +5,8 @@ import sys
 
 cnx = connect()
 
-# analysis_id = 1
-analysis_id = sys.argv[0]
+# analysis_id = sys.argv[1]
+analysis_id = 2
 
 
 def twocorr(x, y):
@@ -127,7 +127,7 @@ for variable in data_raw:
     row = []
     for value in variable:
         if value[0] is not None:
-            row.append(int(value[0]))
+            row.append(float(value[0]))
         else:
             row.append(None)
     data_with_nones.append(row)
@@ -146,18 +146,19 @@ for i in range(0, len(variables)):
             tempvar2 = []
             for k in range(0, len(data[i])):
                 if data[i][k] != None and data[j][k] != None:
-                    tempvar1.append(data[i][k])
-                    tempvar2.append(data[j][k])
+                    tempvar1.append(data[i][k] + 0.000001)
+                    tempvar2.append(data[j][k] + 0.000001)
             corr, p = twocorr(tempvar1, tempvar2)
             corr = round(corr, 2)
             p = round(p, 2)
+        print(corr)
         try:
             cursor91.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
                                 var1 = {var1}, var2 = {var2}, corr_value = {corr_value}, 
                                 p_value = {p_value}""".format(current_id=analysis_id,
                                 var1=variables[i]["variable_id"], var2=variables[j]["variable_id"],
                                 corr_value=corr, p_value=p))
-            if True is False:
+            if i != j:
                 cursor92.execute("""INSERT INTO correlation_analysis_results SET analysis_id = {current_id}, 
                                     var1 = {var1}, var2 = {var2}, corr_value = {corr_value}, 
                                     p_value = {p_value}""".format(current_id=analysis_id,
