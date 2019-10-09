@@ -8,3 +8,5 @@ clustering.py: apply k-modes clustering
 correlation.py: find correlation between two variables, using pearson-r score or point-biserial r-test depending on the types
 
 chisquare.py: find p-value for relationship between two categorical variables using chi-square test
+
+multicollinearity.py: identify if there are dependent variables within a given dataset
